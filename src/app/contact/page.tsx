@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { ContactForm, ContactInfo } from '@/components/contact/contact-form'
 import { GoogleMapEmbed } from '@/components/contact/google-map'
 
@@ -12,3 +13,4 @@ export default function ContactUsPage() {
     <section className="container mt-10 grid items-start gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-10"><GoogleMapEmbed /><ContactInfo /></section>
   </main>
 }
+export const metadata:Metadata={title:'Kontakt',description:'Kontaktieren Sie 0211wohnen für möblierte Apartments und Vermieterservice in Düsseldorf.'}

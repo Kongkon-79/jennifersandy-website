@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { FaqPageContent } from '@/components/faq/faq-page-content'
+
+export const metadata:Metadata={title:'Häufige Fragen',description:'Antworten zu möblierten Apartments, Anfragen, Einzug und Vermietung bei 0211wohnen.'}
 
 export default function FaqsPage() {
   return (

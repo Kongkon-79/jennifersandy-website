@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { X } from 'lucide-react'
 import { TranslatedText } from '@/components/shared/translated-text'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 interface InquiryFormData {
   firstName: string
@@ -12,6 +13,7 @@ interface InquiryFormData {
   email: string
   phoneNumber: string
   message: string
+  privacy: boolean
 }
 
 interface FieldErrors {
@@ -20,6 +22,7 @@ interface FieldErrors {
   email?: string
   phoneNumber?: string
   message?: string
+  privacy?: string
 }
 
 interface InquiryModalProps {
@@ -56,6 +59,7 @@ export function InquiryModal({
     email: '',
     phoneNumber: '',
     message: '',
+    privacy: false,
   })
   const [errors, setErrors] = useState<FieldErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,14 +71,15 @@ export function InquiryModal({
   function validate(): boolean {
     const errs: FieldErrors = {}
 
-    if (!form.firstName.trim()) errs.firstName = 'First name is required'
-    if (!form.lastName.trim()) errs.lastName = 'Last name is required'
-    if (!form.email.trim()) errs.email = 'Email is required'
-    else if (!EMAIL_REGEX.test(form.email)) errs.email = 'Invalid email format'
-    if (!form.phoneNumber.trim()) errs.phoneNumber = 'Phone number is required'
+    if (!form.firstName.trim()) errs.firstName = 'Bitte geben Sie Ihren Vornamen ein.'
+    if (!form.lastName.trim()) errs.lastName = 'Bitte geben Sie Ihren Nachnamen ein.'
+    if (!form.email.trim()) errs.email = 'Bitte geben Sie Ihre E-Mail-Adresse ein.'
+    else if (!EMAIL_REGEX.test(form.email)) errs.email = 'Bitte geben Sie eine gültige E-Mail-Adresse ein.'
+    if (!form.phoneNumber.trim()) errs.phoneNumber = 'Bitte geben Sie Ihre Telefonnummer ein.'
     else if (!isValidPhone(form.phoneNumber))
-      errs.phoneNumber = 'Invalid phone number (10–15 digits)'
-    if (!form.message.trim()) errs.message = 'Message is required'
+      errs.phoneNumber = 'Bitte geben Sie 10–15 Ziffern ein.'
+    if (!form.message.trim()) errs.message = 'Bitte schreiben Sie eine Nachricht.'
+    if (!form.privacy) errs.privacy = 'Bitte stimmen Sie der Datenschutzerklärung zu.'
 
     setErrors(errs)
     return Object.keys(errs).length === 0
@@ -118,6 +123,7 @@ export function InquiryModal({
         email: '',
         phoneNumber: '',
         message: '',
+        privacy: false,
       })
       setTimeout(() => {
         onOpenChange(false)
@@ -134,10 +140,10 @@ export function InquiryModal({
     }
   }
 
-  function update(field: keyof InquiryFormData, value: string) {
+  function update(field: keyof InquiryFormData, value: string | boolean) {
     // phone: only digits, +, space, dash, parens
     if (field === 'phoneNumber') {
-      value = value.replace(/[^\d\s\+\-\(\)]/g, '')
+      value = String(value).replace(/[^\d\s\+\-\(\)]/g, '')
     }
     setForm(prev => ({ ...prev, [field]: value }))
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }))
@@ -155,10 +161,10 @@ export function InquiryModal({
         </button>
 
         <h2 className="text-xl font-semibold text-[#1672E6] mb-1">
-          <TranslatedText text="Send Inquiry" cacheKey="inquiry:title" />
+          Wohnungsanfrage senden
         </h2>
         <p className="text-sm text-slate-500 mb-5">
-          <TranslatedText text="Interested in" cacheKey="inquiry:intro" />{' '}
+          Interesse an{' '}
           <span className="font-medium text-slate-700">{apartmentTitle}</span>
         </p>
 
@@ -197,12 +203,12 @@ export function InquiryModal({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  <TranslatedText text="First Name" cacheKey="inquiry:first" />
+                  Vorname
                 </label>
                 <input
                   value={form.firstName}
                   onChange={e => update('firstName', e.target.value)}
-                  placeholder="John"
+                  placeholder="Ihr Vorname"
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#1672E6] focus:ring-1 focus:ring-[#1672E6]/20 ${errors.firstName ? 'border-red-400' : 'border-slate-200'}`}
                 />
                 {errors.firstName && (
@@ -213,12 +219,12 @@ export function InquiryModal({
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  <TranslatedText text="Last Name" cacheKey="inquiry:last" />
+                  Nachname
                 </label>
                 <input
                   value={form.lastName}
                   onChange={e => update('lastName', e.target.value)}
-                  placeholder="Doe"
+                  placeholder="Ihr Nachname"
                   className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#1672E6] focus:ring-1 focus:ring-[#1672E6]/20 ${errors.lastName ? 'border-red-400' : 'border-slate-200'}`}
                 />
                 {errors.lastName && (
@@ -231,13 +237,13 @@ export function InquiryModal({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                <TranslatedText text="Email Address" cacheKey="inquiry:email" />
+                E-Mail-Adresse
               </label>
               <input
                 type="email"
                 value={form.email}
                 onChange={e => update('email', e.target.value)}
-                placeholder="hello@example.com"
+                placeholder="name@beispiel.de"
                 className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#1672E6] focus:ring-1 focus:ring-[#1672E6]/20 ${errors.email ? 'border-red-400' : 'border-slate-200'}`}
               />
               {errors.email && (
@@ -247,7 +253,7 @@ export function InquiryModal({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                <TranslatedText text="Phone Number" cacheKey="inquiry:phone" />
+                Telefonnummer
               </label>
               <input
                 value={form.phoneNumber}
@@ -265,12 +271,12 @@ export function InquiryModal({
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                <TranslatedText text="Message" cacheKey="inquiry:message" />
+                Nachricht
               </label>
               <textarea
                 value={form.message}
                 onChange={e => update('message', e.target.value)}
-                placeholder="I'm interested in this property. Please send me more information."
+                placeholder="Ich interessiere mich für diese Wohnung. Bitte senden Sie mir weitere Informationen."
                 rows={4}
                 className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-colors focus:border-[#1672E6] focus:ring-1 focus:ring-[#1672E6]/20 resize-none ${errors.message ? 'border-red-400' : 'border-slate-200'}`}
               />
@@ -278,6 +284,8 @@ export function InquiryModal({
                 <p className="mt-0.5 text-xs text-red-500">{errors.message}</p>
               )}
             </div>
+
+            <div><label className="flex items-start gap-3 text-sm text-slate-700"><input type="checkbox" checked={form.privacy} onChange={e=>update('privacy',e.target.checked)} className="mt-1 h-4 w-4 accent-[#6f7470]"/><span>Ich habe die <Link href="/privacy" className="underline">Datenschutzerklärung</Link> gelesen und stimme der Verarbeitung meiner Angaben zu.</span></label>{errors.privacy&&<p className="mt-1 text-xs text-red-500">{errors.privacy}</p>}</div>
 
             {apiError && (
               <p className="text-sm text-red-500 bg-red-50 rounded-lg px-3 py-2">
@@ -288,15 +296,12 @@ export function InquiryModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#1672E6] hover:bg-[#0f63ce] disabled:bg-[#1672E6]/60 text-white text-sm font-semibold py-3 rounded-lg transition-colors"
+                className="w-full bg-[#6f7470] hover:bg-[#5e625f] disabled:opacity-60 text-white text-sm font-semibold py-3 rounded-lg transition-colors"
               >
                 {isSubmitting ? (
-                  <TranslatedText text="Sending..." cacheKey="inquiry:sending" />
+                  <>Wird gesendet …</>
                 ) : (
-                  <TranslatedText
-                    text="Send Inquiry"
-                    cacheKey="inquiry:submit"
-                  />
+                  <>Anfrage senden</>
                 )}
               </button>
           </form>

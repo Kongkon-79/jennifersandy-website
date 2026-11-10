@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import { ApartmentsPageContent } from '@/components/apartments/apartments-page-content'
 
 export const metadata: Metadata = {
-  title: 'Apartments | 0211wohnen',
-  description:
-    'Search and rent fully furnished apartments in Düsseldorf. Simple booking, verified properties, and full-service support.',
+  title: 'Verfügbare Apartments',
+  description: 'Finden Sie verfügbare, vollständig möblierte Mietapartments in Düsseldorf und Umgebung.',
 }
 
 interface ApartmentsPageProps {

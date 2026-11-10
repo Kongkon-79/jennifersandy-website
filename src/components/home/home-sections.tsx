@@ -1,47 +1,13 @@
 'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { ApartmentsPageContent } from '@/components/apartments/apartments-page-content'
-import { fetchBlogs } from '@/lib/blog-api'
-import { stripHtml } from '@/lib/utils'
-
-export function HomeContentSections() {
-  const { data: blogData } = useQuery({
-    queryKey: ['home-latest-blog'],
-    queryFn: () => fetchBlogs({ page: 1, limit: 1 }),
-    staleTime: 300_000,
-  })
-  const article = blogData?.data?.[0]
-  const excerpt = article ? stripHtml(article.excerpt || article.content || '').slice(0, 220) : ''
-
-  return (
-    <>
-      <section aria-labelledby="portfolio-heading">
-        <div className="container px-4 pt-10 sm:px-6 lg:px-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6f7470]">Aktuelle Immobilien</p>
-          <h2 id="portfolio-heading" className="section-title mt-2">Möblierte Apartments auf einen Blick</h2>
-          <p className="mt-3 max-w-2xl leading-7 text-[#6f7470]">Alle angezeigten Immobilien stammen direkt aus den freigegebenen onOffice-Datensätzen. Liste und Karte zeigen immer dieselbe Auswahl.</p>
-        </div>
-        <ApartmentsPageContent homeMapOnly />
-      </section>
-
-      {article && (
-        <section className="container px-4 pb-16 sm:px-6 lg:px-10" aria-labelledby="magazin-heading">
-          <div className="grid overflow-hidden rounded-2xl border border-stone-200 bg-white lg:grid-cols-2">
-            <div className="relative min-h-64 bg-stone-100 lg:min-h-96">
-              <Image src={article.thumbnail || '/images/property-placeholder.svg'} alt={article.title} fill sizes="(max-width:1024px) 100vw, 50vw" className="object-cover" />
-            </div>
-            <div className="flex flex-col justify-center p-7 sm:p-10">
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6f7470]">0211wohnen Magazin</p>
-              <h2 id="magazin-heading" className="section-title mt-3">{article.title}</h2>
-              {excerpt && <p className="mt-5 leading-7 text-[#6f7470]">{excerpt}{excerpt.length === 220 ? '…' : ''}</p>}
-              <Link href={`/blogs/${article.slug}`} className="brand-button mt-7 w-fit">Artikel lesen</Link>
-            </div>
-          </div>
-        </section>
-      )}
-    </>
-  )
-}
+import { Building2, Handshake, MapPin } from 'lucide-react'
+import { fetchApartments } from '@/lib/apartments-api'
+const benefits=[{icon:Building2,title:'Ausgewählte Apartments',text:'Möblierte Mietapartments für einen unkomplizierten Aufenthalt.'},{icon:Handshake,title:'Persönliche Betreuung',text:'Direkte Ansprechpartner begleiten Sie von der Anfrage bis zum Einzug.'},{icon:MapPin,title:'Gute Lagen',text:'Wohnraum in Düsseldorf und Umgebung mit guter Anbindung.'}]
+const reviews=[['Sehr empfehlenswert','Vom ersten Kontakt bis zur Wohnungsübergabe wurden wir freundlich und professionell betreut.'],['Schnell und zuverlässig','Die Kommunikation war unkompliziert und alle Fragen wurden zeitnah beantwortet.'],['Rundum zufrieden','Eine passende möblierte Wohnung und ein persönlicher Service, auf den man sich verlassen kann.']]
+export function HomeContentSections(){const{data,isLoading}=useQuery({queryKey:['home-available-rentals'],queryFn:()=>fetchApartments({page:1,limit:6,vermarktungsart:'miete'}),staleTime:300000});const apartments=data?.apartments||[];return <>
+<section className="container px-4 sm:px-6 lg:px-10"><div className="grid gap-5 md:grid-cols-3">{benefits.map(({icon:Icon,title,text})=><article key={title} className="rounded-2xl border border-stone-200 bg-white p-7"><Icon className="h-8 w-8 text-[#6f7470]"/><h2 className="mt-5 text-xl font-semibold">{title}</h2><p className="mt-3 leading-7 text-[#6f7470]">{text}</p></article>)}</div></section>
+<section className="container px-4 sm:px-6 lg:px-10"><div className="flex items-end justify-between gap-4"><div><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#6f7470]">Aktuell verfügbar</p><h2 className="mt-2 text-3xl font-semibold">Möblierte Apartments</h2></div><Link href="/apartments" className="font-semibold underline">Alle Apartments</Link></div><div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{isLoading&&<p>Wohnungen werden geladen …</p>}{apartments.map(a=><Link key={a.id} href={`/apartments/${a.id}`} className="overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"><div className="relative aspect-[4/3] bg-stone-100"><Image src={a.image} alt={a.title} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover"/></div><div className="p-5"><h3 className="line-clamp-2 font-semibold">{a.title}</h3><p className="mt-2 text-sm text-[#6f7470]">{a.district} · {a.size} m² · {a.rooms} Zimmer</p><p className="mt-3 font-semibold">{a.priceLabel}</p><p className="mt-1 text-sm text-[#6f7470]">{a.availableFrom}</p></div></Link>)}</div></section>
+<section className="bg-[#f0ede8] py-16"><div className="container px-4 sm:px-6 lg:px-10"><h2 className="text-center text-3xl font-semibold">Was unsere Kundinnen und Kunden sagen</h2><div className="mt-8 grid gap-5 md:grid-cols-3">{reviews.map(([title,text])=><blockquote key={title} className="rounded-2xl bg-white p-7"><p className="font-semibold">{title}</p><p className="mt-3 leading-7 text-[#6f7470]">„{text}“</p></blockquote>)}</div></div></section>
+<section className="container px-4 sm:px-6 lg:px-10"><div className="rounded-2xl bg-[#262626] px-6 py-12 text-center text-white"><h2 className="text-3xl font-semibold">Wie können wir Ihnen helfen?</h2><p className="mx-auto mt-4 max-w-2xl text-white/75">Sprechen Sie mit unserem Team über Ihr Wunsch-Apartment oder unseren Vermieterservice.</p><Link href="/contact" className="mt-7 inline-flex rounded-lg bg-[#d1c9be] px-6 py-3 font-semibold text-[#262626]">Kontakt aufnehmen</Link></div></section></>}

@@ -10,12 +10,13 @@ export function HomeHeroSection() {
   const [active, setActive] = useState(0)
   const { data } = useQuery({
     queryKey: ['home-authentic-property-slideshow'],
-    queryFn: () => fetchApartments({ page: 1, limit: 8, sortBy: 'createdAt', sortOrder: 'desc' }),
+    queryFn: () => fetchApartments({ page: 1, limit: 8, vermarktungsart: 'miete', sortBy: 'createdAt', sortOrder: 'desc' }),
     staleTime: 300_000,
   })
-  const slides = useMemo(() => (data?.apartments || []).flatMap(apartment =>
-    apartment.images.filter(image => !image.endsWith('/property-placeholder.svg')).map(image => ({ image, title: apartment.title })),
-  ).slice(0, 10), [data])
+  const slides = useMemo(() => (data?.apartments || []).map(apartment => ({
+    image: apartment.images.find(image => !image.endsWith('/property-placeholder.svg')) || apartment.image,
+    title: apartment.title,
+  })).filter(slide => !slide.image.endsWith('/property-placeholder.svg')).slice(0, 8), [data])
 
   useEffect(() => {
     if (slides.length < 2) return
@@ -35,7 +36,7 @@ export function HomeHeroSection() {
         <div className="relative z-10 flex min-h-[520px] max-w-3xl flex-col justify-center px-6 py-16 text-white sm:min-h-[600px] sm:px-12 lg:px-16">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-white/85">0211wohnen · Düsseldorf</p>
           <h1 id="home-title" className="text-4xl font-bold leading-tight text-white sm:text-6xl">Möblierte Apartments.<br />Einfach ankommen.</h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg">Entdecken Sie aktuelle, von onOffice freigegebene Immobilien in Düsseldorf und Umgebung.</p>
+          <p className="mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg">Entdecken Sie aktuell verfügbare möblierte Mietapartments in Düsseldorf und Umgebung.</p>
           <Link href="/apartments" className="brand-button mt-8 w-fit">Apartments ansehen</Link>
         </div>
         {slides.length > 1 && <div className="absolute bottom-5 right-5 z-20 flex gap-2" aria-label="Slideshow"><span className="rounded-full bg-black/55 px-3 py-1 text-xs text-white">{active + 1} / {slides.length}</span></div>}

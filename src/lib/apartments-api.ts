@@ -31,6 +31,7 @@ export interface OnofficeEstate {
   pricePeriod?: 'day' | 'week' | 'month' | null
   priceLabel?: string
   rentalStatusLabel?: string
+  rentalStatus?: 'available' | 'vacant' | 'partially_vacant' | 'rented' | 'reserved' | 'sold' | 'unknown'
   verfuegbarAbText?: string
   showGoogleMap?: boolean
   kaution?: number
@@ -155,20 +156,6 @@ const amenityLabels: Array<
   ['balcony', 'Balkon / Terrasse'],
 ]
 
-function formatDate(value?: string | null) {
-  if (!value) return 'Verfügbarkeit auf Anfrage'
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'Verfügbarkeit auf Anfrage'
-
-  return new Intl.DateTimeFormat('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Europe/Berlin',
-  }).format(date)
-}
-
 function isEnabled(value?: string | boolean | null) {
   if (typeof value === 'boolean') return value
   if (!value) return false
@@ -184,6 +171,20 @@ function getImages(estate: OnofficeEstate) {
   ].filter((url): url is string => Boolean(url))
 
   return Array.from(new Set(urls))
+}
+
+function descriptionAmenities(estate: OnofficeEstate) {
+  return [estate.ausstatt_beschr, estate.objektbeschreibung].filter(Boolean)
+    .flatMap(text => String(text).split(/\r?\n/)).map(line => line.trim())
+    .filter(line => /^[-–•]\s+/.test(line)).map(line => line.replace(/^[-–•]\s+/, '').trim()).filter(Boolean)
+}
+
+function formatAvailability(estate: OnofficeEstate) {
+  if (estate.verfuegbar_ab) return `Verfügbar ab ${new Intl.DateTimeFormat('de-DE',{month:'2-digit',year:'numeric'}).format(new Date(estate.verfuegbar_ab))}`
+  const text=String(estate.verfuegbarAbText||'').trim()
+  if (!text || /sofort|leerstehend|verfügbar/i.test(text)) return 'Sofort verfügbar'
+  if (/unbefristet/i.test(text)) return 'Verfügbarkeit auf Anfrage'
+  return text
 }
 
 function buildAmenities(estate: OnofficeEstate) {
@@ -207,7 +208,7 @@ function buildAmenities(estate: OnofficeEstate) {
     amenities.push('Haustiere erlaubt')
   }
 
-  return amenities
+  return Array.from(new Set([...amenities,...descriptionAmenities(estate)]))
 }
 
 function toNumber(value: unknown, fallback = 0) {
@@ -245,7 +246,7 @@ export function normalizeEstateToApartment(estate: OnofficeEstate): Apartment {
     priceType,
     pricePeriod: estate.pricePeriod || null,
     priceLabel: estate.priceLabel || (priceType === 'purchase' ? 'Kaufpreis' : priceType === 'rent' ? estate.miete_pauschal ? 'Pauschalmiete' : estate.warmmiete ? 'Warmmiete' : 'Kaltmiete' : ''),
-    rentalStatus: estate.rentalStatusLabel || '',
+    rentalStatus: ['available', 'vacant', 'partially_vacant'].includes(estate.rentalStatus || '') ? 'Sofort verfügbar' : estate.rentalStatusLabel || '',
     hasMapLocation: estate.showGoogleMap === true && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && !(lat === 0 && lng === 0),
     size: toNumber(estate.wohnflaeche),
     rooms: toNumber(estate.anzahl_zimmer),
@@ -253,7 +254,7 @@ export function normalizeEstateToApartment(estate: OnofficeEstate): Apartment {
       isEnabled(estate.balkon) ||
       isEnabled(estate.terrasse) ||
       Boolean(estate.amenities?.balcony),
-    availableFrom: estate.verfuegbarAbText || (estate.verfuegbar_ab ? `Verfügbar ab ${formatDate(estate.verfuegbar_ab)}` : 'Verfügbarkeit auf Anfrage'),
+    availableFrom: formatAvailability(estate),
     image: images[0] || fallbackImage,
     images: images.length > 0 ? images : [fallbackImage],
     district,
@@ -286,7 +287,7 @@ export function normalizeEstateToApartment(estate: OnofficeEstate): Apartment {
 export function formatApartmentPrice(apartment: Pick<Apartment, 'price' | 'pricePeriod' | 'priceType'>) {
   const amount = apartment.price > 0 ? new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(apartment.price) : 'Preis auf Anfrage'
   const period = apartment.priceType === 'rent' ? { day: ' / Tag', week: ' / Woche', month: ' / Monat' }[apartment.pricePeriod || 'month'] : ''
-  return amount + (apartment.price > 0 && apartment.pricePeriod ? period : '')
+  return amount + (apartment.price > 0 && apartment.priceType === 'rent' ? period : '')
 }
 
 async function apiRequest<T>(path: string, init?: RequestInit) {

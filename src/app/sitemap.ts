@@ -1,0 +1,2 @@
+import type { MetadataRoute } from 'next'
+export default function sitemap():MetadataRoute.Sitemap{const base=process.env.NEXT_PUBLIC_SITE_URL||'https://0211wohnen.de';return['','/apartments','/ueber-0211wohnen','/faqs','/contact','/privacy','/terms','/impressum'].map(path=>({url:`${base}${path}`,lastModified:new Date(),changeFrequency:path==='/apartments'?'daily':'monthly',priority:path===''?1:.7}))}

@@ -52,7 +52,8 @@ export default function MapComponent({ apartments, center = defaultCenter, zoom 
     const bounds = new window.google.maps.LatLngBounds()
     const valid = apartments.filter(apartment => apartment.hasMapLocation === true && Number.isFinite(apartment.lat) && Number.isFinite(apartment.lng) && Math.abs(apartment.lat) <= 90 && Math.abs(apartment.lng) <= 180 && !(apartment.lat === 0 && apartment.lng === 0))
     valid.forEach(apartment => {
-      const marker = new window.google.maps.Marker({ map, position: { lat: apartment.lat, lng: apartment.lng }, title: apartment.title + ' · ' + formatApartmentPrice({ price: apartment.price, priceType: apartment.priceType || 'unknown', pricePeriod: apartment.pricePeriod || null }) })
+      const price=formatApartmentPrice({ price: apartment.price, priceType: apartment.priceType || 'unknown', pricePeriod: apartment.pricePeriod || null }).replace(' / Monat','')
+      const marker = new window.google.maps.Marker({ map, position: { lat: apartment.lat, lng: apartment.lng }, title: apartment.title + ' · ' + price, label:{text:price,color:'#262626',fontSize:'11px',fontWeight:'700'}, icon:{path:window.google.maps.SymbolPath.CIRCLE,scale:18,fillColor:'#d1c9be',fillOpacity:1,strokeColor:'#ffffff',strokeWeight:3} })
       marker.apartmentId = apartment.id
       marker.addListener('click', () => onSelect.current?.(apartment.id))
       markers.current.push(marker); bounds.extend(marker.getPosition())
@@ -65,7 +66,7 @@ export default function MapComponent({ apartments, center = defaultCenter, zoom 
     if (!ready || !window.google?.maps) return
     markers.current.forEach(marker => {
       const selected = marker.apartmentId === selectedId
-      marker.setIcon({ path: window.google.maps.SymbolPath.CIRCLE, scale: selected ? 13 : 9, fillColor: selected ? '#262626' : '#b5aa9a', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 3 })
+      marker.setIcon({ path: window.google.maps.SymbolPath.CIRCLE, scale: selected ? 21 : 18, fillColor: selected ? '#b5aa9a' : '#d1c9be', fillOpacity: 1, strokeColor: '#ffffff', strokeWeight: 3 })
       marker.setZIndex(selected ? 1000 : 1)
       if (selected) mapInstance.current?.panTo(marker.getPosition())
     })

@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { FaqAccordion } from '@/components/shared/faq-accordion'
 
 const faqs = [
-  { question: 'Wie finde ich ein verfügbares Apartment?', answer: 'In der Immobilienübersicht können Sie nach Stadtteil, Zimmerzahl, Preis und Einzugsdatum filtern. Es werden ausschließlich aktuell freigegebene Angebote aus onOffice angezeigt.' },
+  { question: 'Wie finde ich ein verfügbares Apartment?', answer: 'In der Immobilienübersicht können Sie nach Stadtteil, Zimmerzahl, Preis und Einzugsdatum filtern. Es werden ausschließlich aktuell freigegebene Mietangebote angezeigt.' },
   { question: 'Sind die Apartments möbliert?', answer: 'Unsere Angebote sind möblierte Apartments. Die genaue Ausstattung, Bilder und Konditionen finden Sie auf der jeweiligen Immobilienseite.' },
   { question: 'Wie stelle ich eine Anfrage?', answer: 'Öffnen Sie die gewünschte Immobilie und senden Sie das Anfrageformular ab. Angemeldete Nutzer sehen den Bearbeitungsstatus anschließend in ihrem persönlichen Bereich.' },
   { question: 'Kann ich einen Besichtigungstermin vereinbaren?', answer: 'Ja. Senden Sie uns eine Anfrage zur gewünschten Immobilie. Unser Vermietungsteam stimmt die verfügbaren Möglichkeiten persönlich mit Ihnen ab.' },
-  { question: 'Welche Kosten fallen an?', answer: 'Miete, Pauschalmiete, Kaution und weitere verfügbare Preisangaben werden direkt aus dem zugehörigen onOffice-Datensatz übernommen und auf der Detailseite ausgewiesen.' },
+  { question: 'Welche Kosten fallen an?', answer: 'Miete, Pauschalmiete, Kaution und weitere verfügbare Preisangaben werden transparent auf der jeweiligen Detailseite ausgewiesen.' },
   { question: 'An wen kann ich mich bei Fragen wenden?', answer: 'Nutzen Sie unser Kontaktformular oder schreiben Sie an die zentrale E-Mail-Adresse. Ihre Anfrage wird an den passenden Ansprechpartner weitergeleitet.' },
 ]
 
